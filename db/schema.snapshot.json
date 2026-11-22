@@ -24255,7 +24255,7 @@
         {
           "name": "requester_user_id",
           "type": "uuid",
-          "notNull": true,
+          "notNull": false,
           "default": null,
           "identity": null,
           "generated": null
@@ -24287,7 +24287,7 @@
         {
           "name": "sha256",
           "type": "bytea",
-          "notNull": true,
+          "notNull": false,
           "default": null,
           "identity": null,
           "generated": null
@@ -24396,9 +24396,19 @@
           "def": "CHECK (((status = 'pending'::text) = (ciphertext IS NOT NULL)))"
         },
         {
+          "name": "trust_evidence_open_identified",
+          "kind": "c",
+          "def": "CHECK (((purged_at IS NOT NULL) OR ((requester_user_id IS NOT NULL) AND (sha256 IS NOT NULL))))"
+        },
+        {
           "name": "trust_evidence_purged",
           "kind": "c",
           "def": "CHECK (((ciphertext IS NULL) = (purged_at IS NOT NULL)))"
+        },
+        {
+          "name": "trust_evidence_purged_anonymous",
+          "kind": "c",
+          "def": "CHECK (((purged_at IS NULL) OR ((requester_user_id IS NULL) AND (decided_by IS NULL) AND (sha256 IS NULL) AND (subject_nullifier IS NULL) AND (country IS NULL) AND (public_name IS NULL))))"
         },
         {
           "name": "trust_evidence_reviews_byte_size_check",
@@ -24408,7 +24418,7 @@
         {
           "name": "trust_evidence_reviews_ciphertext_check",
           "kind": "c",
-          "def": "CHECK (((ciphertext IS NULL) OR ((octet_length(ciphertext) >= 33) AND (octet_length(ciphertext) <= 5242976))))"
+          "def": "CHECK (((ciphertext IS NULL) OR ((octet_length(ciphertext) >= 33) AND (octet_length(ciphertext) <= 5243136))))"
         },
         {
           "name": "trust_evidence_reviews_country_check",
@@ -24478,7 +24488,7 @@
         {
           "name": "trust_evidence_subject_shape",
           "kind": "c",
-          "def": "CHECK (((subject = 'public_body'::text) = ((subject_nullifier IS NOT NULL) AND (country IS NOT NULL))))"
+          "def": "CHECK (((purged_at IS NOT NULL) OR ((subject = 'public_body'::text) = ((subject_nullifier IS NOT NULL) AND (country IS NOT NULL)))))"
         },
         {
           "name": "trust_evidence_window",
@@ -38571,13 +38581,13 @@
       "schema": "public",
       "name": "rout_trust_evidence_close",
       "args": "p_id uuid, p_status text, p_code text, p_actor uuid, p_detail jsonb",
-      "def": "CREATE OR REPLACE FUNCTION public.rout_trust_evidence_close(p_id uuid, p_status text, p_code text, p_actor uuid, p_detail jsonb DEFAULT '{}'::jsonb)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'pg_temp'\nAS $function$\ndeclare v_ws uuid;\nbegin\n  update public.trust_evidence_reviews r\n     set status = p_status, decision_code = p_code, decided_by = p_actor, decided_at = now(), ciphertext = null, purged_at = now()\n   where r.id = p_id and r.status = 'pending'\n  returning r.workspace_id into v_ws;\n  if v_ws is null then return; end if;\n  perform public.rout_trust_log(v_ws, p_id,\n    case p_status when 'approved' then 'evidence_approved' when 'rejected' then 'evidence_rejected'\n                  when 'withdrawn' then 'evidence_withdrawn' else 'evidence_expired' end,\n    p_actor, pg_catalog.jsonb_build_object('code', p_code) || coalesce(p_detail, '{}'::jsonb));\n  perform public.rout_trust_log(v_ws, p_id, 'evidence_purged', p_actor, '{}'::jsonb);\nend $function$"
+      "def": "CREATE OR REPLACE FUNCTION public.rout_trust_evidence_close(p_id uuid, p_status text, p_code text, p_actor uuid, p_detail jsonb DEFAULT '{}'::jsonb)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'pg_temp'\nAS $function$\ndeclare v_ws uuid;\nbegin\n  update public.trust_evidence_reviews r\n     set status = p_status, decision_code = p_code, decided_at = now(), ciphertext = null, purged_at = now(),\n         requester_user_id = null, decided_by = null, sha256 = null, subject_nullifier = null, country = null, public_name = null\n   where r.id = p_id and r.status = 'pending'\n  returning r.workspace_id into v_ws;\n  if v_ws is null then return; end if;\n  perform public.rout_trust_log(v_ws, p_id,\n    case p_status when 'approved' then 'evidence_approved' when 'rejected' then 'evidence_rejected'\n                  when 'withdrawn' then 'evidence_withdrawn' else 'evidence_expired' end,\n    p_actor, pg_catalog.jsonb_build_object('code', p_code) || coalesce(p_detail, '{}'::jsonb));\n  perform public.rout_trust_log(v_ws, p_id, 'evidence_purged', null, '{}'::jsonb);\nend $function$"
     },
     {
       "schema": "public",
       "name": "rout_trust_evidence_submit",
       "args": "p_id uuid, p_ws uuid, p_subject text, p_kind text, p_sha256 bytea, p_mime text, p_size integer, p_ciphertext bytea, p_nullifier bytea, p_country text, p_public_name text",
-      "def": "CREATE OR REPLACE FUNCTION public.rout_trust_evidence_submit(p_id uuid, p_ws uuid, p_subject text, p_kind text, p_sha256 bytea, p_mime text, p_size integer, p_ciphertext bytea, p_nullifier bytea, p_country text, p_public_name text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'pg_temp'\nAS $function$\ndeclare v_user uuid := public.rout_current_user_id();\nbegin\n  if v_user is null or p_ws is null or not public.rout_ws_support_manager(p_ws) then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'not_manager');\n  end if;\n  if p_id is null or p_subject not in ('public_body', 'mandate_proven')\n     or p_kind not in ('kbo_extract', 'staatsblad', 'appointment_decision', 'qes_mandate')\n     or (p_subject = 'public_body' and p_kind = 'qes_mandate')\n     or p_sha256 is null or octet_length(p_sha256) <> 32 or p_ciphertext is null\n     or p_mime not in ('application/pdf', 'image/png', 'image/jpeg') or p_size not between 1 and 5242880\n     or (p_subject = 'public_body') <> (p_nullifier is not null and p_country is not null) then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'invalid');\n  end if;\n  if p_subject = 'mandate_proven' then\n    if not public.rout_user_has_legal_identity(v_user) then\n      return pg_catalog.jsonb_build_object('ok', false, 'reason', 'legal_identity_required');\n    end if;\n    if not exists (select 1 from public.workspace_trust_attestations a\n                    where a.workspace_id = p_ws and a.layer = 'entity' and a.status = 'active' and a.expires_at > now()) then\n      return pg_catalog.jsonb_build_object('ok', false, 'reason', 'organization_required');\n    end if;\n  elsif exists (select 1 from public.workspace_trust_attestations a\n                 where a.layer = 'entity' and a.status = 'active' and a.subject_nullifier = p_nullifier and a.workspace_id <> p_ws) then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'organization_bound_elsewhere');\n  end if;\n  if (select pg_catalog.count(*) from public.trust_evidence_reviews r\n       where r.requester_user_id = v_user and r.submitted_at > now() - interval '24 hours') >= 5 then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'rate_limited');\n  end if;\n  begin\n    insert into public.trust_evidence_reviews (id, workspace_id, requester_user_id, subject, evidence_kind, sha256, mime, byte_size,\n      ciphertext, subject_nullifier, country, public_name, purge_due_at)\n    values (p_id, p_ws, v_user, p_subject, p_kind, p_sha256, p_mime, p_size, p_ciphertext, p_nullifier, p_country,\n      p_public_name, now() + interval '7 days');\n  exception when unique_violation then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'already_pending');\n  end;\n  perform public.rout_trust_log(p_ws, p_id, 'evidence_submitted', v_user, pg_catalog.jsonb_build_object('subject', p_subject, 'kind', p_kind));\n  return pg_catalog.jsonb_build_object('ok', true, 'id', p_id);\nend $function$"
+      "def": "CREATE OR REPLACE FUNCTION public.rout_trust_evidence_submit(p_id uuid, p_ws uuid, p_subject text, p_kind text, p_sha256 bytea, p_mime text, p_size integer, p_ciphertext bytea, p_nullifier bytea, p_country text, p_public_name text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'pg_temp'\nAS $function$\ndeclare v_user uuid := public.rout_current_user_id();\nbegin\n  if v_user is null or p_ws is null or not public.rout_ws_support_manager(p_ws) then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'not_manager');\n  end if;\n  if p_id is null or p_subject not in ('public_body', 'mandate_proven')\n     or p_kind not in ('kbo_extract', 'staatsblad', 'appointment_decision', 'qes_mandate')\n     or (p_subject = 'public_body' and p_kind = 'qes_mandate')\n     or p_sha256 is null or octet_length(p_sha256) <> 32 or p_ciphertext is null\n     or p_mime not in ('application/pdf', 'image/png', 'image/jpeg') or p_size not between 1 and 5242880\n     or (p_subject = 'public_body') <> (p_nullifier is not null and p_country is not null) then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'invalid');\n  end if;\n  if p_subject = 'mandate_proven' then\n    if not public.rout_user_has_legal_identity(v_user) then\n      return pg_catalog.jsonb_build_object('ok', false, 'reason', 'legal_identity_required');\n    end if;\n    if not exists (select 1 from public.workspace_trust_attestations a\n                    where a.workspace_id = p_ws and a.layer = 'entity' and a.status = 'active' and a.expires_at > now()) then\n      return pg_catalog.jsonb_build_object('ok', false, 'reason', 'organization_required');\n    end if;\n  elsif exists (select 1 from public.workspace_trust_attestations a\n                 where a.layer = 'entity' and a.status = 'active' and a.subject_nullifier = p_nullifier and a.workspace_id <> p_ws) then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'organization_bound_elsewhere');\n  end if;\n  -- Counted on the audit chain: purged review rows no longer name their requester (0302).\n  if (select pg_catalog.count(*) from public.workspace_trust_events e\n       where e.event = 'evidence_submitted' and e.actor_user_id = v_user and e.occurred_at > now() - interval '24 hours') >= 5 then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'rate_limited');\n  end if;\n  begin\n    insert into public.trust_evidence_reviews (id, workspace_id, requester_user_id, subject, evidence_kind, sha256, mime, byte_size,\n      ciphertext, subject_nullifier, country, public_name, purge_due_at)\n    values (p_id, p_ws, v_user, p_subject, p_kind, p_sha256, p_mime, p_size, p_ciphertext, p_nullifier, p_country,\n      p_public_name, now() + interval '7 days');\n  exception when unique_violation then\n    return pg_catalog.jsonb_build_object('ok', false, 'reason', 'already_pending');\n  end;\n  perform public.rout_trust_log(p_ws, p_id, 'evidence_submitted', v_user, pg_catalog.jsonb_build_object('subject', p_subject, 'kind', p_kind));\n  return pg_catalog.jsonb_build_object('ok', true, 'id', p_id);\nend $function$"
     },
     {
       "schema": "public",
