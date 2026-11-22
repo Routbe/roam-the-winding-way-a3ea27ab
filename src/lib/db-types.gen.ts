@@ -2267,11 +2267,11 @@ export interface PublicTreasuryRootsRow {
 export interface PublicTrustEvidenceReviewsRow {
   "id": string;
   "workspace_id": string;
-  "requester_user_id": string;
+  "requester_user_id": string | null;
   "subject": string;
   "evidence_kind": string;
   "status": string;
-  "sha256": Uint8Array;
+  "sha256": Uint8Array | null;
   "mime": string;
   "byte_size": number;
   "ciphertext": Uint8Array | null;

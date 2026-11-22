@@ -17,6 +17,8 @@ import { randomBytes } from "@noble/hashes/utils.js";
 
 const KEK_RE = /^[A-Za-z0-9]{40,512}$/; // 40+ alphanumerics ≈ 238+ bits
 const MAGIC = Uint8Array.of(0x52, 0x45, 0x56, 0x31); // "REV1"
+const MAGIC2 = Uint8Array.of(0x52, 0x45, 0x56, 0x32); // "REV2"
+const KID_LEN = 8;
 const NONCE_LEN = 12;
 export const MAX_EVIDENCE_BYTES = 5 * 1024 * 1024;
 export const ALLOWED_MIME = ["application/pdf", "image/png", "image/jpeg"] as const;
@@ -90,36 +92,101 @@ export function sniffMime(bytes: Uint8Array): EvidenceMime | null {
   return null;
 }
 
+/** Key id of a KEK: first 8 bytes of SHA-256 over a domain-separated label (never the key itself). */
+function kekId(kek: Uint8Array): Uint8Array {
+  return sha256(new Uint8Array([...enc.encode("rout.trust.evidence.kid.v2\u001f"), ...kek])).subarray(0, KID_LEN);
+}
+
+function wrapKey(kek: string): Uint8Array {
+  return hkdf(sha256, enc.encode(kek), enc.encode("rout.trust.evidence.salt.v2"), enc.encode("rout.trust.evidence.wrap.v2"), 32);
+}
+
+/** Current KEK first, then the previous one during a rotation window. */
+function keks(env: Record<string, string | undefined>): string[] {
+  return [env["ROUT_EVIDENCE_KEK"], env["ROUT_EVIDENCE_KEK_PREVIOUS"]].filter((k): k is string => typeof k === "string" && KEK_RE.test(k));
+}
+
+/**
+ * REV2: every file gets its own random 256-bit data key (DEK). The DEK is wrapped with AES-256-GCM
+ * under a key derived from ROUT_EVIDENCE_KEK, which lives only in the server environment, never in Neon.
+ *
+ *   sealed = "REV2" || kid(8) || wnonce(12) || wrappedDek(32+16) || nonce(12) || ciphertext || tag(16)
+ *
+ * The purge removes the whole blob (wrapped DEK included) from the live row. A copy in Neon's
+ * point-in-time history still holds the wrapped DEK, so it stays openable for as long as the KEK
+ * with that kid exists: rotate ROUT_EVIDENCE_KEK and destroy the old one once 7 days plus Neon's
+ * history retention have passed, or those copies age out only with that retention.
+ */
 export function sealEvidence(workspaceId: string, reviewId: string, plaintext: Uint8Array, env: Record<string, string | undefined> = process.env): { sealed: Uint8Array; sha256: Uint8Array } {
   if (plaintext.length < 1 || plaintext.length > MAX_EVIDENCE_BYTES) throw new EvidenceVaultError();
-  const key = deriveKey(env);
+  const kek = env["ROUT_EVIDENCE_KEK"];
+  if (!kek || !KEK_RE.test(kek)) throw new EvidenceVaultError();
+  const wk = wrapKey(kek);
+  const dek = randomBytes(32);
   try {
     const digest = sha256(plaintext);
+    const a = aad(workspaceId, reviewId, digest);
+    const kid = kekId(enc.encode(kek));
+    const wnonce = randomBytes(NONCE_LEN);
+    const wrapped = gcm(wk, wnonce, new Uint8Array([...a, ...kid])).encrypt(dek);
     const nonce = randomBytes(NONCE_LEN);
-    const ct = gcm(key, nonce, aad(workspaceId, reviewId, digest)).encrypt(plaintext);
-    const sealed = new Uint8Array(MAGIC.length + NONCE_LEN + ct.length);
-    sealed.set(MAGIC); sealed.set(nonce, MAGIC.length); sealed.set(ct, MAGIC.length + NONCE_LEN);
+    const ct = gcm(dek, nonce, a).encrypt(plaintext);
+    const parts = [MAGIC2, kid, wnonce, wrapped, nonce, ct];
+    const sealed = new Uint8Array(parts.reduce((n, x) => n + x.length, 0));
+    let o = 0;
+    for (const x of parts) { sealed.set(x, o); o += x.length; }
     return { sealed, sha256: digest };
   } finally {
-    key.fill(0);
+    wk.fill(0); dek.fill(0);
   }
 }
 
+function checkDigest(pt: Uint8Array, expected: Uint8Array): void {
+  const d = sha256(pt);
+  let diff = d.length ^ expected.length;
+  for (let i = 0; i < d.length; i++) diff |= d[i]! ^ (expected[i] ?? 0);
+  if (diff !== 0) { pt.fill(0); throw new EvidenceVaultError(); }
+}
+
+function startsWith(b: Uint8Array, m: Uint8Array): boolean {
+  for (let i = 0; i < m.length; i++) if (b[i] !== m[i]) return false;
+  return true;
+}
+
 export function openEvidence(workspaceId: string, reviewId: string, sealed: Uint8Array, expectedSha256: Uint8Array, env: Record<string, string | undefined> = process.env): Uint8Array {
-  if (sealed.length < MAGIC.length + NONCE_LEN + 17) throw new EvidenceVaultError();
-  for (let i = 0; i < MAGIC.length; i++) if (sealed[i] !== MAGIC[i]) throw new EvidenceVaultError();
-  const key = deriveKey(env);
   try {
-    const nonce = sealed.subarray(MAGIC.length, MAGIC.length + NONCE_LEN);
-    const pt = gcm(key, nonce, aad(workspaceId, reviewId, expectedSha256)).decrypt(sealed.subarray(MAGIC.length + NONCE_LEN));
-    const d = sha256(pt);
-    let diff = d.length ^ expectedSha256.length;
-    for (let i = 0; i < d.length; i++) diff |= d[i]! ^ (expectedSha256[i] ?? 0);
-    if (diff !== 0) { pt.fill(0); throw new EvidenceVaultError(); }
-    return pt;
+    const a = aad(workspaceId, reviewId, expectedSha256);
+    if (startsWith(sealed, MAGIC2)) {
+      const head = MAGIC2.length;
+      if (sealed.length < head + KID_LEN + NONCE_LEN + 48 + NONCE_LEN + 17) throw new EvidenceVaultError();
+      const kid = sealed.subarray(head, head + KID_LEN);
+      const wnonce = sealed.subarray(head + KID_LEN, head + KID_LEN + NONCE_LEN);
+      const wrapped = sealed.subarray(head + KID_LEN + NONCE_LEN, head + KID_LEN + NONCE_LEN + 48);
+      const body = head + KID_LEN + NONCE_LEN + 48;
+      const kek = keks(env).find((k) => startsWith(kekId(enc.encode(k)), kid));
+      if (!kek) throw new EvidenceVaultError();
+      const wk = wrapKey(kek);
+      let dek: Uint8Array | undefined;
+      try {
+        dek = gcm(wk, wnonce, new Uint8Array([...a, ...kid])).decrypt(wrapped);
+        const pt = gcm(dek, sealed.subarray(body, body + NONCE_LEN), a).decrypt(sealed.subarray(body + NONCE_LEN));
+        checkDigest(pt, expectedSha256);
+        return pt;
+      } finally {
+        wk.fill(0); dek?.fill(0);
+      }
+    }
+    // REV1 (shared derived key): still opened for reviews filed before 0302 until they purge.
+    if (sealed.length < MAGIC.length + NONCE_LEN + 17 || !startsWith(sealed, MAGIC)) throw new EvidenceVaultError();
+    const key = deriveKey(env);
+    try {
+      const pt = gcm(key, sealed.subarray(MAGIC.length, MAGIC.length + NONCE_LEN), a).decrypt(sealed.subarray(MAGIC.length + NONCE_LEN));
+      checkDigest(pt, expectedSha256);
+      return pt;
+    } finally {
+      key.fill(0);
+    }
   } catch {
     throw new EvidenceVaultError();
-  } finally {
-    key.fill(0);
   }
 }

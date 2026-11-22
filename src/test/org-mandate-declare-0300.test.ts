@@ -28,8 +28,10 @@ let workEmailId = "";
 let firstIssuedAt = 0;
 
 beforeAll(async () => {
-  db = await replayDb((f) => f !== "0300_organization_attestations.sql");
+  // 0302 builds on 0300, so it is applied after it.
+  db = await replayDb((f) => f !== "0300_organization_attestations.sql" && f !== "0302_evidence_purge_anonymous.sql");
   await applyReleased(db, "0300_organization_attestations.sql");
+  await applyReleased(db, "0302_evidence_purge_anonymous.sql");
   await db.exec(`
     insert into public.users (id, email) values ('${A}', 'owner@acme-trust.example');
     insert into public.profiles (id, username, handle_grant) values ('${A}', 'acme-owner', 'root-handle-fixture') on conflict (id) do update set handle_grant = excluded.handle_grant, username = excluded.username;

@@ -85,6 +85,17 @@ describe("evidence vault", () => {
     expect(() => openEvidence(WS, REVIEW, bad, sha256, KEK)).toThrow(EvidenceVaultError);
     expect(() => openEvidence(WS, REVIEW, sealed, new Uint8Array(32), KEK)).toThrow(EvidenceVaultError);
   });
+  it("gives every file its own data key (REV2)", () => {
+    const a = sealEvidence(WS, REVIEW, pdf(), KEK).sealed;
+    expect(new TextDecoder().decode(a.subarray(0, 4))).toBe("REV2");
+  });
+  it("opens a file after rotation only while the previous KEK is kept", () => {
+    const { sealed, sha256 } = sealEvidence(WS, REVIEW, pdf(), KEK);
+    const next = "N".repeat(48);
+    const old = KEK["ROUT_EVIDENCE_KEK"];
+    expect(openEvidence(WS, REVIEW, sealed, sha256, { ROUT_EVIDENCE_KEK: next, ROUT_EVIDENCE_KEK_PREVIOUS: old }).length).toBeGreaterThan(0);
+    expect(() => openEvidence(WS, REVIEW, sealed, sha256, { ROUT_EVIDENCE_KEK: next })).toThrow(EvidenceVaultError);
+  });
   it("uses a fresh 96-bit nonce per file", () => {
     const a = sealEvidence(WS, REVIEW, pdf(), KEK).sealed.subarray(4, 16);
     const b = sealEvidence(WS, REVIEW, pdf(), KEK).sealed.subarray(4, 16);

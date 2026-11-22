@@ -90,7 +90,8 @@ describe("db/0298 registry structure", () => {
     const rows = (await db.query<{ h: string }>(
       "select handle_normalized as h from public.handle_registry where namespace = 'system_reserved' order by 1",
     )).rows.map((r) => r.h);
-    expect(rows).toEqual([...SYSTEM_ROUTE_SLUGS, ...PROTECTED_PUBLIC_SLUGS].sort());
+    // db/0302 adds the language prefixes nl/fr/de/en on top of the 0298 seed.
+    expect(rows).toEqual([...SYSTEM_ROUTE_SLUGS, ...PROTECTED_PUBLIC_SLUGS, "nl", "fr", "de", "en"].sort());
     for (const h of rows) expect(RESERVED_SLUGS.has(h)).toBe(true);
   });
 
