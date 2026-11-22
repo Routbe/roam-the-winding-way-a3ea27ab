@@ -147,6 +147,3 @@ use the editor.
 ## One-file migration rollout
 - A GO for a single migration is applied with scripts/migration-rollout.ts --apply: the exact db/ file text travels as one parameter, runs only if its SHA-256 equals the file checksum and its predecessor is recorded, and is recorded with the definer guard in the same transaction (dry run: src/test/migration-rollout.test.ts). Why: a retyped or hand-split file must never diverge from db/.
 <!-- AGENT-MEMORY:END -->
-
-## Organization evidence
-- Evidence files are REV2 blobs with a per-file data key wrapped under ROUT_EVIDENCE_KEK (outside Neon, rotation via ROUT_EVIDENCE_KEK_PREVIOUS); a closed review row keeps no personal fields and evidence_purged has no actor (db/0302). Why: Neon history copies are shredded only by destroying the old KEK, otherwise they age out with Neon's retention.
