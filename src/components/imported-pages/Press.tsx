@@ -280,8 +280,8 @@ export default function Press() {
           <h2 id="contact" className="font-display text-2xl text-foreground">Perscontact</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Voor interviews, mediavragen en partnerships. Liever rechtstreeks?{" "}
-            <a href="mailto:hallo@rout.be" className="inline-flex items-center gap-1 text-foreground underline-offset-4 hover:underline">
-              <Mail className="h-3.5 w-3.5" /> hallo@rout.be
+            <a href="mailto:press@rout.be" className="inline-flex items-center gap-1 text-foreground underline-offset-4 hover:underline">
+              <Mail className="h-3.5 w-3.5" /> press@rout.be
             </a>
           </p>
           <div className="mt-6 rounded-2xl border border-border bg-card p-5 sm:p-6">
