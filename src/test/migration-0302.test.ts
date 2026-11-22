@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * db/0302 on an offline replay of db/: a closed evidence review keeps no personal data,
  * evidence_purged has no actor or detail, and nl/fr/de/en are reserved. Never touches Neon.
