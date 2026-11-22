@@ -571,7 +571,10 @@
 
 ## Na 0300 (opdracht eigenaar 2026-11-22 16:09)
 - [x] SEO/GEO: audit tegen de 10 pijlers + fasering S1–S7 → docs/seo/PLAN-S1-S7.md (alleen plan). S1 wacht op GO; S4/S5 wachten op architectuurbeslissing
-- [ ] /press: perskit volgens aangeleverde tekst, alleen geverifieerde feiten, NL/FR/DE/EN — feiten nagekeken; wacht op: perscontactadres van eigenaar
-- [ ] Tekst voor european-alternatives.eu klaarzetten (alleen geverifieerde feiten) — wacht op: zelfde contactgegevens
+- [x] Perskit /nl/pers, /fr/presse, /de/presse, /en/press met hreflang + JSON-LD ContactPoint press@rout.be; /press mailt naar press@rout.be
+- [x] Build + volledige Vitest-suite na opruimtaak-wijziging
+- [x] Controle 7-dagen-vernietiging bewijsstukken (verslag aan eigenaar)
+- [ ] Bewijsstukken: rij na vernietiging anonimiseren (requester_user_id, public_name, sha256, subject_nullifier, decided_by leegmaken) + per-bestand sleutel voor crypto-shredding — wacht op: GO eigenaar voor migratie 0302
+- [ ] Voorbeeld draait op Neon ep-restless-haze (schema 0298, 22 leden), niet op productie ep-autumn-salad (0301): organisatieverificatie werkt hier niet — wacht op: keuze eigenaar (productie-string of 0299–0301 op deze branch na GO)
 - [x] SECURITY_ARCHITECTURE.md → docs/security/SECURITY_ARCHITECTURE.md (stand per laag + fases B1–B8, alleen plan); B1 wacht op GO
 - [ ] Stap 4 traject 2 (grondwet, architectuur, tokens.json, openapi.yaml, schema-concept "0301" — krijgt nu een nieuw nummer (0302+), /admin/devices) — wacht op afronding stap 2–3; 0301-concept overlapt met bestaande 0272 (herstel v4) en 0274 (multi-device host keys): eerst herontwerpen
