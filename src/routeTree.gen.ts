@@ -128,6 +128,7 @@ import { Route as CompareIndexRouteImport } from './routes/compare.index'
 import { Route as CompareAuth0AlternativeRouteImport } from './routes/compare.auth0-alternative'
 import { Route as CompareBitlyAlternativeRouteImport } from './routes/compare.bitly-alternative'
 import { Route as CompareLinktreeAlternativeRouteImport } from './routes/compare.linktree-alternative'
+import { Route as DePresseRouteImport } from './routes/de.presse'
 import { Route as DevIndexRouteImport } from './routes/dev.index'
 import { Route as DevAiMcpRouteImport } from './routes/dev.ai-mcp'
 import { Route as DevBlindHashMatchingRouteImport } from './routes/dev.blind-hash-matching'
@@ -149,6 +150,7 @@ import { Route as DeveloperWebhooksRouteImport } from './routes/developer.webhoo
 import { Route as DiscoverIndexRouteImport } from './routes/discover.index'
 import { Route as DiscoverTopicRouteImport } from './routes/discover.$topic'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
+import { Route as EnPressRouteImport } from './routes/en.press'
 import { Route as EventSlugRouteImport } from './routes/event.$slug'
 import { Route as FIdRouteImport } from './routes/f.$id'
 import { Route as FeaturesIndexRouteImport } from './routes/features.index'
@@ -157,6 +159,7 @@ import { Route as FeaturesCookielessAnalyticsRouteImport } from './routes/featur
 import { Route as FeaturesDesignStudioRouteImport } from './routes/features.design-studio'
 import { Route as FeaturesLinkManagementRouteImport } from './routes/features.link-management'
 import { Route as FeedbackSlugRouteImport } from './routes/feedback.$slug'
+import { Route as FrPresseRouteImport } from './routes/fr.presse'
 import { Route as GiftCodeRouteImport } from './routes/gift_.$code'
 import { Route as GuideIndexRouteImport } from './routes/guide.index'
 import { Route as GuideDynamicQrRouteImport } from './routes/guide.dynamic-qr'
@@ -192,6 +195,7 @@ import { Route as InfoTipsRouteImport } from './routes/info.tips'
 import { Route as InfoUsernamesRouteImport } from './routes/info.usernames'
 import { Route as InfoWalletRouteImport } from './routes/info.wallet'
 import { Route as KaartTokenRouteImport } from './routes/kaart.$token'
+import { Route as NlPersRouteImport } from './routes/nl.pers'
 import { Route as OauthAuthorizeRouteImport } from './routes/oauth.authorize'
 import { Route as OauthEndSessionRouteImport } from './routes/oauth.end-session'
 import { Route as PressPreviewsRouteImport } from './routes/press_.previews'
@@ -1084,6 +1088,11 @@ const CompareLinktreeAlternativeRoute =
     path: '/linktree-alternative',
     getParentRoute: () => CompareRoute,
   } as any)
+const DePresseRoute = DePresseRouteImport.update({
+  id: '/de/presse',
+  path: '/de/presse',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DevIndexRoute = DevIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -1189,6 +1198,11 @@ const ESlugRoute = ESlugRouteImport.update({
   path: '/e/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnPressRoute = EnPressRouteImport.update({
+  id: '/en/press',
+  path: '/en/press',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventSlugRoute = EventSlugRouteImport.update({
   id: '/event/$slug',
   path: '/event/$slug',
@@ -1228,6 +1242,11 @@ const FeaturesLinkManagementRoute = FeaturesLinkManagementRouteImport.update({
 const FeedbackSlugRoute = FeedbackSlugRouteImport.update({
   id: '/feedback/$slug',
   path: '/feedback/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FrPresseRoute = FrPresseRouteImport.update({
+  id: '/fr/presse',
+  path: '/fr/presse',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GiftCodeRoute = GiftCodeRouteImport.update({
@@ -1403,6 +1422,11 @@ const InfoWalletRoute = InfoWalletRouteImport.update({
 const KaartTokenRoute = KaartTokenRouteImport.update({
   id: '/kaart/$token',
   path: '/kaart/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NlPersRoute = NlPersRouteImport.update({
+  id: '/nl/pers',
+  path: '/nl/pers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OauthAuthorizeRoute = OauthAuthorizeRouteImport.update({
@@ -3096,6 +3120,7 @@ export interface FileRoutesByFullPath {
   '/compare/auth0-alternative': typeof CompareAuth0AlternativeRoute
   '/compare/bitly-alternative': typeof CompareBitlyAlternativeRoute
   '/compare/linktree-alternative': typeof CompareLinktreeAlternativeRoute
+  '/de/presse': typeof DePresseRoute
   '/dev/ai-mcp': typeof DevAiMcpRoute
   '/dev/blind-hash-matching': typeof DevBlindHashMatchingRoute
   '/dev/credentials': typeof DevCredentialsRoute
@@ -3115,6 +3140,7 @@ export interface FileRoutesByFullPath {
   '/developer/webhooks': typeof DeveloperWebhooksRoute
   '/discover/$topic': typeof DiscoverTopicRoute
   '/e/$slug': typeof ESlugRoute
+  '/en/press': typeof EnPressRoute
   '/event/$slug': typeof EventSlugRoute
   '/f/$id': typeof FIdRoute
   '/features/asset-manager': typeof FeaturesAssetManagerRoute
@@ -3122,6 +3148,7 @@ export interface FileRoutesByFullPath {
   '/features/design-studio': typeof FeaturesDesignStudioRoute
   '/features/link-management': typeof FeaturesLinkManagementRoute
   '/feedback/$slug': typeof FeedbackSlugRoute
+  '/fr/presse': typeof FrPresseRoute
   '/gift/$code': typeof GiftCodeRoute
   '/guide/dynamic-qr': typeof GuideDynamicQrRoute
   '/guide/print-qr-code': typeof GuidePrintQrCodeRoute
@@ -3155,6 +3182,7 @@ export interface FileRoutesByFullPath {
   '/info/usernames': typeof InfoUsernamesRoute
   '/info/wallet': typeof InfoWalletRoute
   '/kaart/$token': typeof KaartTokenRoute
+  '/nl/pers': typeof NlPersRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/oauth/end-session': typeof OauthEndSessionRoute
   '/press/previews': typeof PressPreviewsRoute
@@ -3555,6 +3583,7 @@ export interface FileRoutesByTo {
   '/compare/auth0-alternative': typeof CompareAuth0AlternativeRoute
   '/compare/bitly-alternative': typeof CompareBitlyAlternativeRoute
   '/compare/linktree-alternative': typeof CompareLinktreeAlternativeRoute
+  '/de/presse': typeof DePresseRoute
   '/dev/ai-mcp': typeof DevAiMcpRoute
   '/dev/blind-hash-matching': typeof DevBlindHashMatchingRoute
   '/dev/credentials': typeof DevCredentialsRoute
@@ -3574,6 +3603,7 @@ export interface FileRoutesByTo {
   '/developer/webhooks': typeof DeveloperWebhooksRoute
   '/discover/$topic': typeof DiscoverTopicRoute
   '/e/$slug': typeof ESlugRoute
+  '/en/press': typeof EnPressRoute
   '/event/$slug': typeof EventSlugRoute
   '/f/$id': typeof FIdRoute
   '/features/asset-manager': typeof FeaturesAssetManagerRoute
@@ -3581,6 +3611,7 @@ export interface FileRoutesByTo {
   '/features/design-studio': typeof FeaturesDesignStudioRoute
   '/features/link-management': typeof FeaturesLinkManagementRoute
   '/feedback/$slug': typeof FeedbackSlugRoute
+  '/fr/presse': typeof FrPresseRoute
   '/gift/$code': typeof GiftCodeRoute
   '/guide/dynamic-qr': typeof GuideDynamicQrRoute
   '/guide/print-qr-code': typeof GuidePrintQrCodeRoute
@@ -3614,6 +3645,7 @@ export interface FileRoutesByTo {
   '/info/usernames': typeof InfoUsernamesRoute
   '/info/wallet': typeof InfoWalletRoute
   '/kaart/$token': typeof KaartTokenRoute
+  '/nl/pers': typeof NlPersRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/oauth/end-session': typeof OauthEndSessionRoute
   '/press/previews': typeof PressPreviewsRoute
@@ -4027,6 +4059,7 @@ export interface FileRoutesById {
   '/compare/auth0-alternative': typeof CompareAuth0AlternativeRoute
   '/compare/bitly-alternative': typeof CompareBitlyAlternativeRoute
   '/compare/linktree-alternative': typeof CompareLinktreeAlternativeRoute
+  '/de/presse': typeof DePresseRoute
   '/dev/ai-mcp': typeof DevAiMcpRoute
   '/dev/blind-hash-matching': typeof DevBlindHashMatchingRoute
   '/dev/credentials': typeof DevCredentialsRoute
@@ -4046,6 +4079,7 @@ export interface FileRoutesById {
   '/developer/webhooks': typeof DeveloperWebhooksRoute
   '/discover/$topic': typeof DiscoverTopicRoute
   '/e/$slug': typeof ESlugRoute
+  '/en/press': typeof EnPressRoute
   '/event/$slug': typeof EventSlugRoute
   '/f/$id': typeof FIdRoute
   '/features/asset-manager': typeof FeaturesAssetManagerRoute
@@ -4053,6 +4087,7 @@ export interface FileRoutesById {
   '/features/design-studio': typeof FeaturesDesignStudioRoute
   '/features/link-management': typeof FeaturesLinkManagementRoute
   '/feedback/$slug': typeof FeedbackSlugRoute
+  '/fr/presse': typeof FrPresseRoute
   '/gift_/$code': typeof GiftCodeRoute
   '/guide/dynamic-qr': typeof GuideDynamicQrRoute
   '/guide/print-qr-code': typeof GuidePrintQrCodeRoute
@@ -4086,6 +4121,7 @@ export interface FileRoutesById {
   '/info/usernames': typeof InfoUsernamesRoute
   '/info/wallet': typeof InfoWalletRoute
   '/kaart/$token': typeof KaartTokenRoute
+  '/nl/pers': typeof NlPersRoute
   '/oauth/authorize': typeof OauthAuthorizeRoute
   '/oauth/end-session': typeof OauthEndSessionRoute
   '/press_/previews': typeof PressPreviewsRoute
@@ -4502,6 +4538,7 @@ export interface FileRouteTypes {
     | '/compare/auth0-alternative'
     | '/compare/bitly-alternative'
     | '/compare/linktree-alternative'
+    | '/de/presse'
     | '/dev/ai-mcp'
     | '/dev/blind-hash-matching'
     | '/dev/credentials'
@@ -4521,6 +4558,7 @@ export interface FileRouteTypes {
     | '/developer/webhooks'
     | '/discover/$topic'
     | '/e/$slug'
+    | '/en/press'
     | '/event/$slug'
     | '/f/$id'
     | '/features/asset-manager'
@@ -4528,6 +4566,7 @@ export interface FileRouteTypes {
     | '/features/design-studio'
     | '/features/link-management'
     | '/feedback/$slug'
+    | '/fr/presse'
     | '/gift/$code'
     | '/guide/dynamic-qr'
     | '/guide/print-qr-code'
@@ -4561,6 +4600,7 @@ export interface FileRouteTypes {
     | '/info/usernames'
     | '/info/wallet'
     | '/kaart/$token'
+    | '/nl/pers'
     | '/oauth/authorize'
     | '/oauth/end-session'
     | '/press/previews'
@@ -4961,6 +5001,7 @@ export interface FileRouteTypes {
     | '/compare/auth0-alternative'
     | '/compare/bitly-alternative'
     | '/compare/linktree-alternative'
+    | '/de/presse'
     | '/dev/ai-mcp'
     | '/dev/blind-hash-matching'
     | '/dev/credentials'
@@ -4980,6 +5021,7 @@ export interface FileRouteTypes {
     | '/developer/webhooks'
     | '/discover/$topic'
     | '/e/$slug'
+    | '/en/press'
     | '/event/$slug'
     | '/f/$id'
     | '/features/asset-manager'
@@ -4987,6 +5029,7 @@ export interface FileRouteTypes {
     | '/features/design-studio'
     | '/features/link-management'
     | '/feedback/$slug'
+    | '/fr/presse'
     | '/gift/$code'
     | '/guide/dynamic-qr'
     | '/guide/print-qr-code'
@@ -5020,6 +5063,7 @@ export interface FileRouteTypes {
     | '/info/usernames'
     | '/info/wallet'
     | '/kaart/$token'
+    | '/nl/pers'
     | '/oauth/authorize'
     | '/oauth/end-session'
     | '/press/previews'
@@ -5432,6 +5476,7 @@ export interface FileRouteTypes {
     | '/compare/auth0-alternative'
     | '/compare/bitly-alternative'
     | '/compare/linktree-alternative'
+    | '/de/presse'
     | '/dev/ai-mcp'
     | '/dev/blind-hash-matching'
     | '/dev/credentials'
@@ -5451,6 +5496,7 @@ export interface FileRouteTypes {
     | '/developer/webhooks'
     | '/discover/$topic'
     | '/e/$slug'
+    | '/en/press'
     | '/event/$slug'
     | '/f/$id'
     | '/features/asset-manager'
@@ -5458,6 +5504,7 @@ export interface FileRouteTypes {
     | '/features/design-studio'
     | '/features/link-management'
     | '/feedback/$slug'
+    | '/fr/presse'
     | '/gift_/$code'
     | '/guide/dynamic-qr'
     | '/guide/print-qr-code'
@@ -5491,6 +5538,7 @@ export interface FileRouteTypes {
     | '/info/usernames'
     | '/info/wallet'
     | '/kaart/$token'
+    | '/nl/pers'
     | '/oauth/authorize'
     | '/oauth/end-session'
     | '/press_/previews'
@@ -5881,18 +5929,22 @@ export interface RootRouteChildren {
   BookingBookingIdRoute: typeof BookingBookingIdRoute
   BrandSplatRoute: typeof BrandSplatRoute
   ClaimTokenRoute: typeof ClaimTokenRoute
+  DePresseRoute: typeof DePresseRoute
   DeveloperAiMcpRoute: typeof DeveloperAiMcpRoute
   DeveloperCredentialsRoute: typeof DeveloperCredentialsRoute
   DeveloperIdentityOauthRoute: typeof DeveloperIdentityOauthRoute
   DeveloperWebhooksRoute: typeof DeveloperWebhooksRoute
   DiscoverTopicRoute: typeof DiscoverTopicRoute
   ESlugRoute: typeof ESlugRoute
+  EnPressRoute: typeof EnPressRoute
   EventSlugRoute: typeof EventSlugRoute
   FIdRoute: typeof FIdRoute
   FeedbackSlugRoute: typeof FeedbackSlugRoute
+  FrPresseRoute: typeof FrPresseRoute
   GiftCodeRoute: typeof GiftCodeRoute
   IdentityRevokeRoute: typeof IdentityRevokeRoute
   KaartTokenRoute: typeof KaartTokenRoute
+  NlPersRoute: typeof NlPersRoute
   OauthAuthorizeRoute: typeof OauthAuthorizeRoute
   OauthEndSessionRoute: typeof OauthEndSessionRoute
   PressPreviewsRoute: typeof PressPreviewsRoute
@@ -6894,6 +6946,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompareLinktreeAlternativeRouteImport
       parentRoute: typeof CompareRoute
     }
+    '/de/presse': {
+      id: '/de/presse'
+      path: '/de/presse'
+      fullPath: '/de/presse'
+      preLoaderRoute: typeof DePresseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dev/': {
       id: '/dev/'
       path: '/'
@@ -7041,6 +7100,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ESlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/en/press': {
+      id: '/en/press'
+      path: '/en/press'
+      fullPath: '/en/press'
+      preLoaderRoute: typeof EnPressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/event/$slug': {
       id: '/event/$slug'
       path: '/event/$slug'
@@ -7095,6 +7161,13 @@ declare module '@tanstack/react-router' {
       path: '/feedback/$slug'
       fullPath: '/feedback/$slug'
       preLoaderRoute: typeof FeedbackSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fr/presse': {
+      id: '/fr/presse'
+      path: '/fr/presse'
+      fullPath: '/fr/presse'
+      preLoaderRoute: typeof FrPresseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gift_/$code': {
@@ -7340,6 +7413,13 @@ declare module '@tanstack/react-router' {
       path: '/kaart/$token'
       fullPath: '/kaart/$token'
       preLoaderRoute: typeof KaartTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nl/pers': {
+      id: '/nl/pers'
+      path: '/nl/pers'
+      fullPath: '/nl/pers'
+      preLoaderRoute: typeof NlPersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/oauth/authorize': {
@@ -10096,18 +10176,22 @@ const rootRouteChildren: RootRouteChildren = {
   BookingBookingIdRoute: BookingBookingIdRoute,
   BrandSplatRoute: BrandSplatRoute,
   ClaimTokenRoute: ClaimTokenRoute,
+  DePresseRoute: DePresseRoute,
   DeveloperAiMcpRoute: DeveloperAiMcpRoute,
   DeveloperCredentialsRoute: DeveloperCredentialsRoute,
   DeveloperIdentityOauthRoute: DeveloperIdentityOauthRoute,
   DeveloperWebhooksRoute: DeveloperWebhooksRoute,
   DiscoverTopicRoute: DiscoverTopicRoute,
   ESlugRoute: ESlugRoute,
+  EnPressRoute: EnPressRoute,
   EventSlugRoute: EventSlugRoute,
   FIdRoute: FIdRoute,
   FeedbackSlugRoute: FeedbackSlugRoute,
+  FrPresseRoute: FrPresseRoute,
   GiftCodeRoute: GiftCodeRoute,
   IdentityRevokeRoute: IdentityRevokeRoute,
   KaartTokenRoute: KaartTokenRoute,
+  NlPersRoute: NlPersRoute,
   OauthAuthorizeRoute: OauthAuthorizeRoute,
   OauthEndSessionRoute: OauthEndSessionRoute,
   PressPreviewsRoute: PressPreviewsRoute,
