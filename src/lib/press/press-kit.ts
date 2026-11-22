@@ -36,7 +36,7 @@ type Copy = {
   otherLanguages: string;
 };
 
-const ORIGIN_NAME = "Jona Zeno Delplanche";
+const ORIGIN_NAME = "Jona Zeno Delplanche / delplanche.cloud";
 
 export const PRESS_COPY: Record<PressLocale, Copy> = {
   nl: {
@@ -53,7 +53,7 @@ export const PRESS_COPY: Record<PressLocale, Copy> = {
     facts: [
       ["Naam", "ROUT"],
       ["Website", "https://rout.be"],
-      ["Herkomst", `Brussel, België — initiatief van ${ORIGIN_NAME}`],
+      ["Herkomst", `Brussel, België (initiatief van ${ORIGIN_NAME})`],
       ["Licentie", "Open source (AGPL-3.0)"],
       ["Tracking en advertenties", "Geen trackers, geen advertenties, geen cookiebanner"],
       ["Cryptografie", "Hybride post-quantum handtekeningen (Ed25519 + ML-DSA-65) en passkeys (WebAuthn)"],
@@ -88,7 +88,7 @@ export const PRESS_COPY: Record<PressLocale, Copy> = {
     facts: [
       ["Nom", "ROUT"],
       ["Site web", "https://rout.be"],
-      ["Origine", `Bruxelles, Belgique — initiative de ${ORIGIN_NAME}`],
+      ["Origine", `Bruxelles, Belgique (initiative de ${ORIGIN_NAME})`],
       ["Licence", "Open source (AGPL-3.0)"],
       ["Traçage et publicité", "Aucun traceur, aucune publicité, aucune bannière de cookies"],
       ["Cryptographie", "Signatures post-quantiques hybrides (Ed25519 + ML-DSA-65) et passkeys (WebAuthn)"],
@@ -123,7 +123,7 @@ export const PRESS_COPY: Record<PressLocale, Copy> = {
     facts: [
       ["Name", "ROUT"],
       ["Website", "https://rout.be"],
-      ["Herkunft", `Brüssel, Belgien — Initiative von ${ORIGIN_NAME}`],
+      ["Herkunft", `Brüssel, Belgien (Initiative von ${ORIGIN_NAME})`],
       ["Lizenz", "Open Source (AGPL-3.0)"],
       ["Tracking und Werbung", "Keine Tracker, keine Werbung, kein Cookie-Banner"],
       ["Kryptografie", "Hybride Post-Quanten-Signaturen (Ed25519 + ML-DSA-65) und Passkeys (WebAuthn)"],
@@ -158,7 +158,7 @@ export const PRESS_COPY: Record<PressLocale, Copy> = {
     facts: [
       ["Name", "ROUT"],
       ["Website", "https://rout.be"],
-      ["Origin", `Brussels, Belgium — started by ${ORIGIN_NAME}`],
+      ["Origin", `Brussels, Belgium (initiative of ${ORIGIN_NAME})`],
       ["Licence", "Open source (AGPL-3.0)"],
       ["Tracking and ads", "No trackers, no ads, no cookie banner"],
       ["Cryptography", "Hybrid post-quantum signatures (Ed25519 + ML-DSA-65) and passkeys (WebAuthn)"],
